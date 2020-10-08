@@ -1,0 +1,65 @@
+package online.djcodes.product;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.*;
+
+@WebServlet(name = "updateproduct")
+public class updateproduct extends HttpServlet {
+    private Connection connection;
+
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        RequestDispatcher rd = request.getRequestDispatcher("products.jsp");
+        rd.forward(request, response);
+
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        try {
+            HttpSession session = request.getSession();
+            Class.forName("com.mysql.jdbc.Driver");
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/stockmanager","root","");
+            //Parameters
+            String pName = request.getParameter("pname");
+            String pPrice = request.getParameter("pprice");
+            String pQuantity = request.getParameter("pquantity");
+            String pDescription = request.getParameter("pdescription");
+            int id = Integer.parseInt(request.getParameter("id"));
+
+            PreparedStatement ps = connection.prepareStatement("UPDATE `sm_products` SET `pname`= ?,`pprice`= ?,`pquantity`= ?,`pdescription`= ? WHERE `pid`= ?");
+            ps.setString(1,pName);
+            ps.setString(2,pPrice);
+            ps.setString(3,pQuantity);
+            ps.setString(4,pDescription);
+            ps.setInt(5,id);
+
+            ps.executeUpdate();
+
+            PrintWriter out = response.getWriter();
+            out.print("<script> alert(\"Product Details Updated successfully\"); </script>");
+
+            RequestDispatcher rd = request.getRequestDispatcher("products.jsp");
+            rd.include(request, response);
+
+
+
+
+        }
+        catch(Exception e) {
+            PrintWriter out = response.getWriter();
+            out.print("Exception"+e);
+        }
+
+    }
+
+}
